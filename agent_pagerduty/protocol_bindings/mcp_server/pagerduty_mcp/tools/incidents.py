@@ -255,3 +255,33 @@ async def acknowledge_incident(
     else:
         logger.error(f"Failed to acknowledge incident '{id}': {data.get('error')}")
         return {"error": data.get("error", "Failed to acknowledge incident")} 
+    
+async def get_incident(
+    id: str
+) -> Dict[str, Any]:
+    """Get details of a specific incident by ID
+    Args:
+        id: The ID of the incident to retrieve (required)
+    Returns:
+        A dictionary containing the incident details.
+        detailed description about the incident.
+    """
+    logger.debug(f"Getting incident with ID: {id}")
+
+    if not id:
+        logger.error("Incident ID is required")
+        return {"error": "Incident ID is required"}
+    
+    params = {
+        "include[]": "body"  # Include the body details in the response
+    }
+
+    success, data = await make_api_request(f"incidents/{id}", params=params)
+
+    if not success:
+        logger.error(f"Failed to retrieve incident {id}: {data.get('error')}")
+        return {"error": data.get("error", "Failed to retrieve incident")}
+
+
+    logger.info(f"Successfully retrieved incident {id}")
+    return data

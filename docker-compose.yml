@@ -1,0 +1,16 @@
+services:
+  pagerduty-mcp-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mcp
+    ports:
+      - "3001:3000"
+    environment:
+      - PAGERDUTY_API_KEY=${PAGERDUTY_API_KEY}
+      - PAGERDUTY_API_URL=${PAGERDUTY_API_URL:-https://api.pagerduty.com}
+    volumes:
+      # Optional: mount a .env file if you prefer file-based configuration
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    
+

@@ -1,0 +1,40 @@
+FROM python:3.13-slim
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+# Copy the entire project to leverage the main package structure
+COPY . /app/
+
+# Install uv and poetry for dependency management
+RUN pip install uv poetry
+
+# Configure poetry
+RUN poetry config virtualenvs.create true
+RUN poetry config virtualenvs.in-project true
+RUN poetry config cache-dir /app/.cache
+RUN poetry config virtualenvs.path /app/.venv
+
+# Install the main package and its dependencies
+RUN poetry install --no-interaction
+
+# Set ownership of the application directory to the non-root user
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Set environment variables for MCP server
+ENV PYTHONPATH=/app
+ENV PAGERDUTY_API_URL="https://api.pagerduty.com"
+ENV MCP_HOST="0.0.0.0"
+ENV MCP_PORT="3000"
+
+# Expose the default MCP server port (can be overridden)
+EXPOSE 3000
+
+# Run the HTTP/SSE MCP server
+# Note: PAGERDUTY_API_KEY should be provided at runtime via docker run -e or compose
+CMD ["poetry", "run", "python", "-m", "agent_pagerduty.protocol_bindings.mcp_server.pagerduty_mcp.http_server"]
