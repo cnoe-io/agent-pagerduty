@@ -209,6 +209,7 @@ async def resolve_incident(
 
     incident_data = {
         "incident": {
+            "type": "incident",
             "status": "resolved"
         }
     }
