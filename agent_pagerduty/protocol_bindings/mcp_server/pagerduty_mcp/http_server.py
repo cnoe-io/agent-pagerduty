@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-PagerDuty MCP Server
+PagerDuty MCP HTTP Server
 
-This server provides a Model Context Protocol (MCP) interface to the PagerDuty API,
-allowing large language models and AI assistants to manage PagerDuty resources.
+This server provides a Model Context Protocol (MCP) interface over HTTP/SSE to the PagerDuty API,
+allowing large language models and AI assistants to manage PagerDuty resources remotely.
 """
 import logging
+import os
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 from agent_pagerduty.protocol_bindings.mcp_server.pagerduty_mcp.tools import (
     incidents,
@@ -50,4 +51,9 @@ mcp.tool()(oncalls.get_oncalls)
 
 # Start server when run directly
 if __name__ == "__main__":
-    mcp.run() 
+    # Get host and port from environment variables
+    host = os.getenv("MCP_HOST", "0.0.0.0")
+    port = int(os.getenv("MCP_PORT", "3000"))
+    
+    # Run the server with SSE transport for HTTP connectivity
+    mcp.run(transport="sse", host=host, port=port)
